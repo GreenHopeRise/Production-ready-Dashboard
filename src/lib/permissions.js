@@ -1,0 +1,20 @@
+export const permission = {
+    admin:{
+        users:true,
+        productCreat: true,
+        productUpdate: true,
+        productDelete: true
+    },
+    user:{
+        users:false,
+        productCreat: false,
+        productUpdate: false,
+        productDelete: false
+    },
+    editor:{
+        users:false,
+        productCreat: true,
+        productUpdate: true,
+        productDelete: false
+    },
+}
