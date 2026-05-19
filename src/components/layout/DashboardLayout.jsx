@@ -1,31 +1,28 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
 
 const DashboardLayout = () => {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50">
 
-      {/* Sidebar */}
-      <aside className="w-60 bg-gray-900 text-white p-4">
-        <h2 className="text-xl font-bold">Dashboard</h2>
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+      />
 
-        <ul className="mt-6 space-y-2">
-          <li>Dashboard</li>
-          <li>Products</li>
-          <li>Users</li>
-          <li>Settings</li>
-        </ul>
-      </aside>
+      <div className="flex-1 flex flex-col">
 
-      {/* Main */}
-      <main className="flex-1 p-6">
-        <div className="border-b pb-4 mb-4">
-          Navbar (User / Notification / Theme)
-        </div>
+        <Navbar />
 
-        {/* ROUTE CONTENT */}
-        <Outlet />
-      </main>
+        <main className="flex-1 p-6 overflow-y-auto">
+          <Outlet />
+        </main>
 
+      </div>
     </div>
   );
 };

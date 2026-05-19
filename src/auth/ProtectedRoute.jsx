@@ -4,7 +4,12 @@ import { useAuth } from "./AuthContext";
 const ProtectedRoute = ({ children }) => {
   const { loading, user } = useAuth();
 
-  if (loading) return <p>Checking auth...</p>;
+  if (loading)
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <p className="animate-pulse">Checking authentication...</p>
+    </div>
+  );
 
   if (!user) return <Navigate to="/login" replace />;
 
