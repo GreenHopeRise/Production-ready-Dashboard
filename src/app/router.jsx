@@ -1,6 +1,7 @@
 import ProtectedRoute from "@/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ProductsPage from "@/features/products/ProductsPage";
+import UsersPage from "@/features/users/UsersPage";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
@@ -26,6 +27,7 @@ const Router = () => {
         >
           <Route index element={<div>Dashboard Home</div>} />
           <Route path="products" element={<ProductsPage />} />
+          <Route path="users" element={<UsersPage/>} />
         </Route>
 
         {/* fallback */}

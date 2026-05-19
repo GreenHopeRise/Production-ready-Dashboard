@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "@/auth/AuthContext";
+// import { MdDarkMode } from "react-icons/md";
+import { CiLight } from "react-icons/ci";
+import { MdNightlightRound } from "react-icons/md";
+import { GoPersonFill } from "react-icons/go";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -7,9 +11,11 @@ const Navbar = () => {
 
   return (
     <header className="h-14 bg-white border-b px-6 flex items-center justify-between">
-
       <h1 className="text-sm font-medium text-gray-700">
-        Dashboard
+        {user?.role
+          ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+          : ""}
+        <span> panel</span>
       </h1>
 
       <input
@@ -18,23 +24,18 @@ const Navbar = () => {
       />
 
       <div className="flex items-center gap-3">
-
         <button
           onClick={() => setDark(!dark)}
-          className="px-3 py-1 border rounded-md text-sm"
+          className="px-3 py-1  text-2xl"
         >
-          {dark ? "🌙" : "☀️"}
+          {dark ? <MdNightlightRound />: <CiLight />}
         </button>
 
-        <div className="w-8 h-8 rounded-full bg-gray-200" />
+        <div className="text-xl border rounded-full p-2" ><GoPersonFill /></div>
 
-        <button
-          onClick={logout}
-          className="text-sm text-red-500"
-        >
+        <button onClick={logout} className="text-sm text-red-500">
           Logout
         </button>
-
       </div>
     </header>
   );
