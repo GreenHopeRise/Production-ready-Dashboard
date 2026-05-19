@@ -9,6 +9,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ auto login on refresh
   const checkAuth = async () => {
     const token = localStorage.getItem("token");
 
@@ -19,7 +20,7 @@ const AuthProvider = ({ children }) => {
 
     try {
       const res = await getMe();
-      setUser(res.data.user);
+      setUser(res.data);
     } catch {
       localStorage.removeItem("token");
     } finally {
