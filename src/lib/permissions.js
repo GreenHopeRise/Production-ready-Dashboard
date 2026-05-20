@@ -18,3 +18,6 @@ export const permission = {
         productDelete: false
     },
 }
+export const can=(role, action)=>{
+    return permission?.[role]?.[action] || false
+}

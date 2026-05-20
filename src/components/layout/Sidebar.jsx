@@ -1,54 +1,77 @@
-import { LucideArrowBigLeftDash, LucideArrowBigRightDash, LucideLayoutDashboard } from "lucide-react";
+import {
+  LucideArrowBigLeftDash,
+  LucideArrowBigRightDash,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
-// import { MdOutlineSpaceDashboard } from "react-icons/md";
-import { FaUsers } from "react-icons/fa6";
-// import { BsBox2 } from "react-icons/bs";
-import { RiSettingsLine } from "react-icons/ri";
-import { FaBox } from "react-icons/fa6";
+
+import { useAuth } from "@/auth/AuthContext";
+import { sidebarItem } from "@/lib/sidebar.config";
+
 const Sidebar = ({ collapsed, setCollapsed }) => {
+  const { user } = useAuth();
+
+  /* ---------------- ACTIVE LINK STYLE ---------------- */
+
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ${
-      isActive
-        ? "bg-black text-green-500"
-        : "text-gray-600 hover:bg-gray-100"
-    }`;
+    `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all
+     ${
+       isActive
+         ? "bg-black text-green-500"
+         : "text-gray-600 hover:bg-gray-100"
+     }`;
+
+  /* ---------------- RBAC FILTER ---------------- */
+
+  const allowedItems = sidebarItem.filter((item) =>
+    item.allow.includes(user?.role)
+  );
+
+  /* ---------------- UI ---------------- */
 
   return (
     <aside
-      className={`bg-white border-r transition-all duration-500 flex flex-col ${
-        collapsed ? "w-16" : "w-64"
-      }`}
+      className={`bg-white border-r flex flex-col transition-all duration-300
+      ${collapsed ? "w-16" : "w-64"}`}
     >
-      <div className="p-4 flex items-center justify-between">
-        <h1 className="font-bold text-lg">
+      {/* ---------- LOGO + COLLAPSE ---------- */}
+      <div className="h-14 px-4 flex items-center justify-between border-b">
+        <h1 className="font-bold text-lg tracking-wide">
           {collapsed ? "S" : "SaaS"}
         </h1>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-xs px-2 py-1 "
+          className="p-1 rounded hover:bg-gray-100"
         >
-          {collapsed ? <LucideArrowBigRightDash /> : <LucideArrowBigLeftDash />}
+          {collapsed ? (
+            <LucideArrowBigRightDash size={18} />
+          ) : (
+            <LucideArrowBigLeftDash size={18} />
+          )}
         </button>
       </div>
 
-      <nav className="space-y-1 p-2">
-        <NavLink to="/" className={linkClass}>
-          <LucideLayoutDashboard className="text-xl" /> {!collapsed && "Dashboard"}
-        </NavLink>
+      {/* ---------- MENU ---------- */}
+      <nav className="flex-1 p-2 space-y-1">
+        {allowedItems.map((item) => {
+          const Icon = item.icon;
 
-        <NavLink to="/products" className={linkClass}>
-          <FaBox  className="text-xl font-bold" /> {!collapsed && "Products"}
-        </NavLink>
+          return (
+            <NavLink key={item.path} to={item.path} className={linkClass}>
+              <Icon className="text-xl shrink-0" />
 
-        <NavLink to="/users" className={linkClass}>
-          <FaUsers className="text-xl"/> {!collapsed && "Users"}
-        </NavLink>
-
-        <NavLink to="/settings" className={linkClass}>
-          <RiSettingsLine className='text-xl'/> {!collapsed && "Settings"}
-        </NavLink>
+              {!collapsed && (
+                <span className="truncate">{item.label}</span>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
+
+      {/* ---------- FOOTER ---------- */}
+      <div className="p-3 border-t text-xs text-gray-400 text-center">
+        {!collapsed && "SaaS Dashboard v1.0"}
+      </div>
     </aside>
   );
 };

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "@/api/product.api";
+import { useAuth } from "@/auth/AuthContext";
+import { can } from "@/lib/permissions";
 
 const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
+  const {user} = useAuth()
 
   const fetchProducts = async () => {
     try {
@@ -30,6 +33,9 @@ const ProductsPage = () => {
         <div key={p._id} className="border p-3 mb-2">
           <p>{p.name}</p>
           <p>${p.price}</p>
+          {
+            can(user?.role, 'productDelete')&&<button>Delete</button>
+          }
         </div>
       ))}
     </div>
