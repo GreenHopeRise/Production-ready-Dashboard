@@ -15,23 +15,23 @@ const Router = () => {
     <BrowserRouter>
       <Routes>
         {/* PUBLIC */}
-<Route
-  path="/login"
-  element={
-    <GuestRoute>
-      <Login />
-    </GuestRoute>
-  }
-/>
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
 
-<Route
-  path="/register"
-  element={
-    <GuestRoute>
-      <Register />
-    </GuestRoute>
-  }
-/>
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          }
+        />
 
         {/* PROTECTED AREA */}
         <Route
