@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
-import { createProduct, getProducts, updateProduct } from "@/api/product.api";
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+} from "@/api/product.api";
 import { useAuth } from "@/auth/AuthContext";
 import { can } from "@/lib/can";
 
 const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
-  // const [apiLoading, setApiLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(null)
+  const [apiLoading, setApiLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -41,6 +47,7 @@ const ProductsPage = () => {
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
+      setApiLoading(true)
       if (selectProduct) {
         await updateProduct(selectProduct._id, form);
       } else {
@@ -57,6 +64,8 @@ const ProductsPage = () => {
       });
     } catch (err) {
       console.error(err);
+    }finally{
+      setApiLoading(false)
     }
   };
   const resetForm = () => {
@@ -70,7 +79,27 @@ const ProductsPage = () => {
       price: "",
       category: "",
     });
+    
   };
+  const handleDelete = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    setDeleteLoading(id)
+    await deleteProduct(id);
+    await fetchProducts();
+  } catch (err) {
+    console.error(err);
+  }finally{
+
+    setDeleteLoading(null)
+  }
+  
+};
   return (
     <div className="bg-white rounded-xl border p-5">
       {/* TOP BAR */}
@@ -156,9 +185,9 @@ const ProductsPage = () => {
                   className="w-full bg-black text-white py-2 rounded"
                   onClick={() => {
                     // setApiLoading(true);
-                  }}
+                  }} disabled={apiLoading}
                 >
-                  <h2>{selectProduct ? "Edit Product" : "Add Product"}</h2>
+                  <h2>{apiLoading?'Saving':selectProduct ? "Edit Product" : "Add Product"}</h2>
                 </button>
               </form>
             </div>
@@ -217,8 +246,12 @@ const ProductsPage = () => {
 
                     {/* DELETE */}
                     {can(user?.role, "products.delete") && (
-                      <button className="px-3 py-1 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-50">
-                        Delete
+                      <button
+                        className="px-3 py-1 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-50"
+                        onClick={() => handleDelete(product._id)}
+                        disabled={deleteLoading=== product._id}
+                      >
+                        {deleteLoading===product._id?'Deleting...':'Delete'}
                       </button>
                     )}
                   </div>
