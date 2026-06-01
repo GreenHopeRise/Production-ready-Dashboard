@@ -41,23 +41,35 @@ const ProductsPage = () => {
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      if(selectProduct){
-        await updateProduct(selectProduct._id, form)
-      }else{
-        await createProduct(form)
+      if (selectProduct) {
+        await updateProduct(selectProduct._id, form);
+      } else {
+        await createProduct(form);
       }
-      await fetchProducts()
-      setOpen(false)
-      setSelectProduct(null)
+      await fetchProducts();
+      setOpen(false);
+      setSelectProduct(null);
       setForm({
-  name: "",
-  description: "",
-  price: "",
-  category: "",
-});
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+      });
     } catch (err) {
       console.error(err);
     }
+  };
+  const resetForm = () => {
+    setOpen(false);
+
+    setSelectProduct(null);
+
+    setForm({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+    });
   };
   return (
     <div className="bg-white rounded-xl border p-5">
@@ -72,7 +84,18 @@ const ProductsPage = () => {
         {can(user?.role, "products.create") && (
           <button
             className="bg-black text-white px-4 py-2 rounded-lg text-sm"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setSelectProduct(null);
+
+              setForm({
+                name: "",
+                description: "",
+                price: "",
+                category: "",
+              });
+
+              setOpen(true);
+            }}
           >
             Add Product
           </button>
@@ -81,13 +104,15 @@ const ProductsPage = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white w-full max-w-md rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">{selectProduct ? "Edit Product" : "Add Product"}</h2>
+                <h2 className="text-lg font-semibold">
+                  {selectProduct ? "Edit Product" : "Add Product"}
+                </h2>
 
-                <button onClick={() => setOpen(false)}>✕</button>
+                <button onClick={resetForm}>✕</button>
               </div>
 
               <form onSubmit={handleCreateProduct}>
-               <input
+                <input
                   type="text"
                   placeholder="Product Name"
                   className="w-full border p-2 rounded mb-3"
@@ -135,7 +160,6 @@ const ProductsPage = () => {
                 >
                   <h2>{selectProduct ? "Edit Product" : "Add Product"}</h2>
                 </button>
-                
               </form>
             </div>
           </div>
