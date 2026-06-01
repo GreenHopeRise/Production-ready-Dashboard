@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "@/api/product.api";
+import { createProduct, getProducts, updateProduct } from "@/api/product.api";
 import { useAuth } from "@/auth/AuthContext";
 import { can } from "@/lib/can";
 
 const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
+  // const [apiLoading, setApiLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    name:'',
-    description:'',
-    price:'',
-    category:''
-  })
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+  });
+  const [selectProduct, setSelectProduct] = useState(null);
 
   const { user } = useAuth();
 
@@ -34,7 +36,29 @@ const ProductsPage = () => {
   if (loading) {
     return <p>Loading...</p>;
   }
+  // console.log(form);
 
+  const handleCreateProduct = async (e) => {
+    e.preventDefault();
+    try {
+      if(selectProduct){
+        await updateProduct(selectProduct._id, form)
+      }else{
+        await createProduct(form)
+      }
+      await fetchProducts()
+      setOpen(false)
+      setSelectProduct(null)
+      setForm({
+  name: "",
+  description: "",
+  price: "",
+  category: "",
+});
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div className="bg-white rounded-xl border p-5">
       {/* TOP BAR */}
@@ -50,64 +74,72 @@ const ProductsPage = () => {
             className="bg-black text-white px-4 py-2 rounded-lg text-sm"
             onClick={() => setOpen(true)}
           >
-            + Add Product
+            Add Product
           </button>
         )}
-        {
-  open && (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-xl p-6">
+        {open && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white w-full max-w-md rounded-xl p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">{selectProduct ? "Edit Product" : "Add Product"}</h2>
 
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">
-            Add Product
-          </h2>
+                <button onClick={() => setOpen(false)}>✕</button>
+              </div>
 
-          <button onClick={() => setOpen(false)}>
-            ✕
-          </button>
-        </div>
+              <form onSubmit={handleCreateProduct}>
+               <input
+                  type="text"
+                  placeholder="Product Name"
+                  className="w-full border p-2 rounded mb-3"
+                  value={form.name}
+                  onChange={(e) => {
+                    setForm({ ...form, name: e.target.value });
+                  }}
+                />
 
-        <form>
-          <input
-            type="text"
-            placeholder="Product Name"
-            className="w-full border p-2 rounded mb-3"
-            value={form.name}
-            onChange={(e)=>{
-              setForm({...form, name:e.target.value})
-            }}
-          />
+                <input
+                  type="number"
+                  placeholder="Price"
+                  className="w-full border p-2 rounded mb-3"
+                  value={form.price}
+                  onChange={(e) => {
+                    setForm({ ...form, price: e.target.value });
+                  }}
+                />
 
-          <input
-            type="number"
-            placeholder="Price"
-            className="w-full border p-2 rounded mb-3"
-          />
+                <input
+                  type="text"
+                  placeholder="Category"
+                  className="w-full border p-2 rounded mb-3"
+                  value={form.category}
+                  onChange={(e) => {
+                    setForm({ ...form, category: e.target.value });
+                  }}
+                />
 
-          <input
-            type="text"
-            placeholder="Category"
-            className="w-full border p-2 rounded mb-3"
-          />
+                <textarea
+                  placeholder="Description"
+                  className="w-full border p-2 rounded mb-3"
+                  value={form.description}
+                  onChange={(e) => {
+                    setForm({ ...form, description: e.target.value });
+                  }}
+                />
 
-          <textarea
-            placeholder="Description"
-            className="w-full border p-2 rounded mb-3"
-          />
-
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded"
-          >
-            Create Product
-          </button>
-        </form>
-
-      </div>
-    </div>
-  )
-}
+                <button
+                  type="submit"
+                  className="w-full bg-black text-white py-2 rounded"
+                  onClick={() => {
+                    // setApiLoading(true);
+                  }}
+                >
+                  <h2>{selectProduct ? "Edit Product" : "Add Product"}</h2>
+                </button>
+                
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* TABLE */}
@@ -142,7 +174,19 @@ const ProductsPage = () => {
                   <div className="flex items-center gap-2">
                     {/* EDIT */}
                     {can(user?.role, "products.update") && (
-                      <button className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100">
+                      <button
+                        className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100"
+                        onClick={() => {
+                          setSelectProduct(product);
+                          setForm({
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            category: product.category,
+                          });
+                          setOpen(true);
+                        }}
+                      >
                         Edit
                       </button>
                     )}
