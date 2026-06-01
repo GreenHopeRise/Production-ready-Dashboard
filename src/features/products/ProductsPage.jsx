@@ -7,10 +7,11 @@ import {
 } from "@/api/product.api";
 import { useAuth } from "@/auth/AuthContext";
 import { can } from "@/lib/can";
+import toast from "react-hot-toast";
 
 const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
-  const [deleteLoading, setDeleteLoading] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
@@ -30,6 +31,7 @@ const ProductsPage = () => {
       setProducts(res.data);
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -40,18 +42,26 @@ const ProductsPage = () => {
   }, []);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="p-5 space-y-3">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+          <div key={i} className="h-12 bg-gray-200 animate-pulse rounded" />
+        ))}
+      </div>
+    );
   }
   // console.log(form);
 
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      setApiLoading(true)
+      setApiLoading(true);
       if (selectProduct) {
         await updateProduct(selectProduct._id, form);
+        toast.success("Product updated successfully");
       } else {
         await createProduct(form);
+        toast.success("Product created successfully");
       }
       await fetchProducts();
       setOpen(false);
@@ -64,8 +74,9 @@ const ProductsPage = () => {
       });
     } catch (err) {
       console.error(err);
-    }finally{
-      setApiLoading(false)
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    } finally {
+      setApiLoading(false);
     }
   };
   const resetForm = () => {
@@ -79,27 +90,27 @@ const ProductsPage = () => {
       price: "",
       category: "",
     });
-    
   };
   const handleDelete = async (id) => {
-  const confirmDelete = window.confirm(
-    "Are you sure?"
-  );
+    const confirmDelete = window.confirm("Are you sure?");
 
-  if (!confirmDelete) return;
+    if (!confirmDelete) return;
+    const prevProducts = [...products]
+    setProducts(prv=>prv.filter(p=>p._id!==id))
 
-  try {
-    setDeleteLoading(id)
-    await deleteProduct(id);
-    await fetchProducts();
-  } catch (err) {
-    console.error(err);
-  }finally{
-
-    setDeleteLoading(null)
-  }
-  
-};
+    try {
+      setDeleteLoading(id);
+      await deleteProduct(id);
+      await fetchProducts();
+      toast.success("Product deleted successfully");
+    } catch (err) {
+      setProducts(prevProducts)
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
   return (
     <div className="bg-white rounded-xl border p-5">
       {/* TOP BAR */}
@@ -185,9 +196,16 @@ const ProductsPage = () => {
                   className="w-full bg-black text-white py-2 rounded"
                   onClick={() => {
                     // setApiLoading(true);
-                  }} disabled={apiLoading}
+                  }}
+                  disabled={apiLoading}
                 >
-                  <h2>{apiLoading?'Saving':selectProduct ? "Edit Product" : "Add Product"}</h2>
+                  <h2>
+                    {apiLoading
+                      ? "Saving"
+                      : selectProduct
+                        ? "Edit Product"
+                        : "Add Product"}
+                  </h2>
                 </button>
               </form>
             </div>
@@ -208,56 +226,66 @@ const ProductsPage = () => {
           </thead>
 
           <tbody>
-            {products.map((product) => (
-              <tr
-                key={product._id}
-                className="border-b hover:bg-gray-50 transition"
-              >
-                {/* PRODUCT */}
-                <td className="py-4 font-medium">{product.name}</td>
-
-                {/* PRICE */}
-                <td className="py-4">${product.price}</td>
-
-                {/* CATEGORY */}
-                <td className="py-4">{product.category}</td>
-
-                {/* ACTIONS */}
-                <td className="py-4">
-                  <div className="flex items-center gap-2">
-                    {/* EDIT */}
-                    {can(user?.role, "products.update") && (
-                      <button
-                        className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100"
-                        onClick={() => {
-                          setSelectProduct(product);
-                          setForm({
-                            name: product.name,
-                            description: product.description,
-                            price: product.price,
-                            category: product.category,
-                          });
-                          setOpen(true);
-                        }}
-                      >
-                        Edit
-                      </button>
-                    )}
-
-                    {/* DELETE */}
-                    {can(user?.role, "products.delete") && (
-                      <button
-                        className="px-3 py-1 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-50"
-                        onClick={() => handleDelete(product._id)}
-                        disabled={deleteLoading=== product._id}
-                      >
-                        {deleteLoading===product._id?'Deleting...':'Delete'}
-                      </button>
-                    )}
-                  </div>
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="text-center py-10 text-gray-500">
+                  No products found 😐
                 </td>
               </tr>
-            ))}
+            ) : (
+              products.map((product) => (
+                <tr
+                  key={product._id}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  {/* PRODUCT */}
+                  <td className="py-4 font-medium">{product.name}</td>
+
+                  {/* PRICE */}
+                  <td className="py-4">${product.price}</td>
+
+                  {/* CATEGORY */}
+                  <td className="py-4">{product.category}</td>
+
+                  {/* ACTIONS */}
+                  <td className="py-4">
+                    <div className="flex items-center gap-2">
+                      {/* EDIT */}
+                      {can(user?.role, "products.update") && (
+                        <button
+                          className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100"
+                          onClick={() => {
+                            setSelectProduct(product);
+                            setForm({
+                              name: product.name,
+                              description: product.description,
+                              price: product.price,
+                              category: product.category,
+                            });
+                            setOpen(true);
+                          }}
+                        >
+                          Edit
+                        </button>
+                      )}
+
+                      {/* DELETE */}
+                      {can(user?.role, "products.delete") && (
+                        <button
+                          className="px-3 py-1 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-50"
+                          onClick={() => handleDelete(product._id)}
+                          disabled={deleteLoading === product._id}
+                        >
+                          {deleteLoading === product._id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
