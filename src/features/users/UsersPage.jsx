@@ -1,5 +1,6 @@
 import { getUsers, updateUserRole, deleteUser } from "@/api/users.api";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaPersonWalkingArrowLoopLeft, FaPersonWalkingArrowRight } from "react-icons/fa6";
 
 const UsersPage = () => {
@@ -34,11 +35,9 @@ const totalPages = Math.ceil(users.length / limit);
     }
   };
 
-useEffect(() => {
-  if (page > totalPages && totalPages > 0) {
-    setPage(totalPages);
-  }
-}, [users, totalPages, page]);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // ---------------- ROLE UPDATE ----------------
   const handleUpdateRole = async () => {
@@ -60,20 +59,30 @@ useEffect(() => {
   };
 
   // ---------------- DELETE USER ----------------
-  const handleDelete = async (id) => {
-    const ok = window.confirm("Delete this user?");
-    if (!ok) return;
+const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure?");
+  if (!confirmDelete) return;
 
-    try {
-      setDeleteLoading(id);
-      await deleteUser(id);
-      await fetchUsers();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDeleteLoading(null);
-    }
-  };
+  const prevUsers = [...users];
+
+  setUsers((prev) => prev.filter((u) => u._id !== id));
+
+  try {
+    setDeleteLoading(id);
+
+    await deleteUser(id);
+
+    toast.success("User deleted successfully");
+  } catch (err) {
+    setUsers(prevUsers);
+
+    toast.error(
+      err?.response?.data?.message || "Something went wrong"
+    );
+  } finally {
+    setDeleteLoading(null);
+  }
+};
 
   // ---------------- ROLE STYLE ----------------
   const getRoleStyle = (role) => {

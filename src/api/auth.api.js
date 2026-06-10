@@ -5,3 +5,4 @@ export const loginUser = (data) =>
 
 export const getMe = () =>
   api.get("/auth/me");
+export const registerUser = (data) => api.post("/auth/register", data);
