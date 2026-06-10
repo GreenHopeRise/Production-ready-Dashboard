@@ -8,6 +8,7 @@ import {
 import { useAuth } from "@/auth/AuthContext";
 import { can } from "@/lib/can";
 import toast from "react-hot-toast";
+import { FaPersonWalkingArrowLoopLeft, FaPersonWalkingArrowRight } from "react-icons/fa6";
 
 const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,14 @@ const ProductsPage = () => {
     category: "",
   });
   const [selectProduct, setSelectProduct] = useState(null);
+  const [page, setPage] = useState(1)
+  const limit =10
+  const paginatedProducts = products.slice(
+  (page - 1) * limit,
+  page * limit
+);
+
+const totalPages = Math.ceil(products.length / limit);
 
   const { user } = useAuth();
 
@@ -44,6 +53,7 @@ const ProductsPage = () => {
   if (loading) {
     return (
       <div className="p-5 space-y-3">
+        <div  className="h-25 bg-gray-200 animate-pulse rounded" />
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
           <div key={i} className="h-12 bg-gray-200 animate-pulse rounded" />
         ))}
@@ -233,7 +243,7 @@ const ProductsPage = () => {
                 </td>
               </tr>
             ) : (
-              products.map((product) => (
+              paginatedProducts .map((product) => (
                 <tr
                   key={product._id}
                   className="border-b hover:bg-gray-50 transition"
@@ -253,7 +263,7 @@ const ProductsPage = () => {
                       {/* EDIT */}
                       {can(user?.role, "products.update") && (
                         <button
-                          className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100"
+                          className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100 cursor-pointer"
                           onClick={() => {
                             setSelectProduct(product);
                             setForm({
@@ -272,7 +282,7 @@ const ProductsPage = () => {
                       {/* DELETE */}
                       {can(user?.role, "products.delete") && (
                         <button
-                          className="px-3 py-1 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-50"
+                          className="px-3 py-1 text-sm border border-red-500 cursor-pointer text-red-500 rounded-md hover:bg-red-50"
                           onClick={() => handleDelete(product._id)}
                           disabled={deleteLoading === product._id}
                         >
@@ -288,6 +298,30 @@ const ProductsPage = () => {
             )}
           </tbody>
         </table>
+        {/* PAGINATION */}
+<div className="flex items-center justify-center gap-3 mt-6">
+  
+  <button
+    className="px-3 py-1 border rounded disabled:opacity-50"
+    disabled={page === 1}
+    onClick={() => setPage((p) => p - 1)}
+  >
+    <FaPersonWalkingArrowLoopLeft className="text-red-400" />
+  </button>
+
+  <span className="text-sm">
+    {page} / {totalPages}
+  </span>
+
+  <button
+    className="px-3 py-1 border rounded disabled:opacity-50"
+    disabled={page === totalPages}
+    onClick={() => setPage((p) => p + 1)}
+  >
+    <FaPersonWalkingArrowRight className="text-blue-400"/>
+  </button>
+
+</div>
       </div>
     </div>
   );
