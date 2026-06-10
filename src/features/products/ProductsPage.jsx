@@ -302,7 +302,7 @@ const totalPages = Math.ceil(products.length / limit);
 <div className="flex items-center justify-center gap-3 mt-6">
   
   <button
-    className="px-3 py-1 border rounded disabled:opacity-50"
+    className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
     disabled={page === 1}
     onClick={() => setPage((p) => p - 1)}
   >
@@ -314,7 +314,7 @@ const totalPages = Math.ceil(products.length / limit);
   </span>
 
   <button
-    className="px-3 py-1 border rounded disabled:opacity-50"
+    className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
     disabled={page === totalPages}
     onClick={() => setPage((p) => p + 1)}
   >

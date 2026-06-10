@@ -9,6 +9,7 @@ import UsersPage from "@/features/users/UsersPage";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Unauthorized from "@/pages/Unauthorized";
+import { Settings } from "lucide-react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -70,6 +71,14 @@ const Router = () => {
             element={
               <RoleRoute allow={["admin"]}>
                 <UsersPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <RoleRoute allow={["admin", "editor", "user"]}>
+                <Settings/>
               </RoleRoute>
             }
           />
