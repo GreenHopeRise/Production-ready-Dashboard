@@ -2,6 +2,7 @@ import GuestRoute from "@/auth/GuestRoute";
 import ProtectedRoute from "@/auth/ProtectedRoute";
 import RoleRoute from "@/auth/RoleRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardPage from "@/features/dashboard/DashboardPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import Login from "@/pages/Login";
@@ -47,7 +48,7 @@ const Router = () => {
             index
             element={
               <RoleRoute allow={["admin", "editor", "user"]}>
-                <div>Dashboard Home</div>
+                <DashboardPage/>
               </RoleRoute>
             }
           />
