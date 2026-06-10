@@ -1,4 +1,4 @@
-import { getUsers } from "@/api/users.api";
+import { getUsers, updateUserRole } from "@/api/users.api";
 import { useEffect, useState } from "react";
 
 const UsersPage = () => {
@@ -19,6 +19,42 @@ const UsersPage = () => {
       setLoading(false);
     }
   };
+  const getRoleStyle = (role) => {
+  switch (role) {
+    case "admin":
+      return "bg-green-100 text-green-700";
+
+    case "editor":
+      return "bg-blue-100 text-blue-700";
+
+    case "user":
+      return "bg-yellow-100 text-yellow-700";
+
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+const handleUpdateRole = async () => {
+  try {
+    setApiLoading(true);
+
+    await updateUserRole(
+      selectUser._id,
+      role
+    );
+
+    await fetchUsers();
+
+    setOpen(false);
+
+    setSelectUser(null);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setApiLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUsers();
@@ -65,7 +101,7 @@ const UsersPage = () => {
                 </td>
 
                 <td className="py-4">
-                  <span className="px-2 py-1 rounded-full text-xs bg-gray-100">
+                  <span className={`px-2 py-1 rounded-full text-xs ${getRoleStyle(u.role)}`}>
                     {u.role}
                   </span>
                 </td>
@@ -116,7 +152,7 @@ const UsersPage = () => {
 
             <input
               disabled
-              value={selectedUser?.name || ""}
+              value={selectUser?.name || ""}
               className="w-full border p-2 rounded bg-gray-100"
             />
           </div>
@@ -147,10 +183,11 @@ const UsersPage = () => {
             </select>
           </div>
 
-          <button
+          <button onClick={handleUpdateRole}
             className="w-full bg-black text-white py-2 rounded"
+            disabled={apiLoading}
           >
-            Save Changes
+            {apiLoading? 'Saving...':'Save Changes'}
           </button>
 
         </div>
