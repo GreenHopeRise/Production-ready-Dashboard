@@ -87,6 +87,12 @@ const ProductsPage = () => {
     e.preventDefault();
     try {
       setApiLoading(true);
+      if (!form.name.trim()) {
+  return toast.error("Name required");
+}
+if (Number(form.price) <= 0){
+  return toast.error("Price required");
+}
       if (selectProduct) {
         await updateProduct(selectProduct._id, form);
         toast.success("Product updated successfully");
