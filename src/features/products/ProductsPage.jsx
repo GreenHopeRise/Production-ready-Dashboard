@@ -8,9 +8,24 @@ import {
 import { useAuth } from "@/auth/AuthContext";
 import { can } from "@/lib/can";
 import toast from "react-hot-toast";
-import { FaPersonWalkingArrowLoopLeft, FaPersonWalkingArrowRight } from "react-icons/fa6";
+import {
+  FaPersonWalkingArrowLoopLeft,
+  FaPersonWalkingArrowRight,
+} from "react-icons/fa6";
+import { useSearch } from "@/components/layout/SearchContext";
 
 const ProductsPage = () => {
+  const [priceAsc, setPriceAsc] = useState(true);
+
+  const handleSortByPrice = () => {
+    const sorted = [...products].sort((a, b) =>
+      priceAsc ? a.price - b.price : b.price - a.price,
+    );
+
+    setProducts(sorted);
+    setPriceAsc(!priceAsc);
+  };
+  const { search } = useSearch();
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
@@ -22,15 +37,21 @@ const ProductsPage = () => {
     price: "",
     category: "",
   });
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(search.toLowerCase()) ||
+      product.category.toLowerCase().includes(search.toLowerCase()) ||
+      product.description.toLowerCase().includes(search.toLowerCase()),
+  );
   const [selectProduct, setSelectProduct] = useState(null);
-  const [page, setPage] = useState(1)
-  const limit =10
-  const paginatedProducts = products.slice(
-  (page - 1) * limit,
-  page * limit
-);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const paginatedProducts = filteredProducts.slice(
+    (page - 1) * limit,
+    page * limit,
+  );
 
-const totalPages = Math.ceil(products.length / limit);
+  const totalPages = Math.ceil(filteredProducts.length / limit);
 
   const { user } = useAuth();
 
@@ -53,7 +74,7 @@ const totalPages = Math.ceil(products.length / limit);
   if (loading) {
     return (
       <div className="p-5 space-y-3">
-        <div  className="h-25 bg-gray-200 animate-pulse rounded" />
+        <div className="h-25 bg-gray-200 animate-pulse rounded" />
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
           <div key={i} className="h-12 bg-gray-200 animate-pulse rounded" />
         ))}
@@ -105,8 +126,8 @@ const totalPages = Math.ceil(products.length / limit);
     const confirmDelete = window.confirm("Are you sure?");
 
     if (!confirmDelete) return;
-    const prevProducts = [...products]
-    setProducts(prv=>prv.filter(p=>p._id!==id))
+    const prevProducts = [...products];
+    setProducts((prv) => prv.filter((p) => p._id !== id));
 
     try {
       setDeleteLoading(id);
@@ -114,7 +135,7 @@ const totalPages = Math.ceil(products.length / limit);
       await fetchProducts();
       toast.success("Product deleted successfully");
     } catch (err) {
-      setProducts(prevProducts)
+      setProducts(prevProducts);
       console.error(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
     } finally {
@@ -229,7 +250,9 @@ const totalPages = Math.ceil(products.length / limit);
           <thead>
             <tr className="border-b text-left text-sm text-gray-500">
               <th className="py-3">Product</th>
-              <th className="py-3">Price</th>
+              <th className="py-3 cursor-pointer" onClick={handleSortByPrice}>
+                Price {priceAsc ? "↑" : "↓"}
+              </th>
               <th className="py-3">Category</th>
               <th className="py-3">Actions</th>
             </tr>
@@ -243,7 +266,7 @@ const totalPages = Math.ceil(products.length / limit);
                 </td>
               </tr>
             ) : (
-              paginatedProducts .map((product) => (
+              paginatedProducts.map((product) => (
                 <tr
                   key={product._id}
                   className="border-b hover:bg-gray-50 transition"
@@ -299,29 +322,27 @@ const totalPages = Math.ceil(products.length / limit);
           </tbody>
         </table>
         {/* PAGINATION */}
-<div className="flex items-center justify-center gap-3 mt-6">
-  
-  <button
-    className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
-    disabled={page === 1}
-    onClick={() => setPage((p) => p - 1)}
-  >
-    <FaPersonWalkingArrowLoopLeft className="text-red-400" />
-  </button>
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            <FaPersonWalkingArrowLoopLeft className="text-red-400" />
+          </button>
 
-  <span className="text-sm">
-    {page} / {totalPages}
-  </span>
+          <span className="text-sm">
+            {page} / {totalPages}
+          </span>
 
-  <button
-    className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
-    disabled={page === totalPages}
-    onClick={() => setPage((p) => p + 1)}
-  >
-    <FaPersonWalkingArrowRight className="text-blue-400"/>
-  </button>
-
-</div>
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100"
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            <FaPersonWalkingArrowRight className="text-blue-400" />
+          </button>
+        </div>
       </div>
     </div>
   );

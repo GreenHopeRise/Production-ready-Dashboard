@@ -1,26 +1,43 @@
 import { getUsers, updateUserRole, deleteUser } from "@/api/users.api";
+import { useSearch } from "@/components/layout/SearchContext";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FaPersonWalkingArrowLoopLeft, FaPersonWalkingArrowRight } from "react-icons/fa6";
+import {
+  FaPersonWalkingArrowLoopLeft,
+  FaPersonWalkingArrowRight,
+} from "react-icons/fa6";
 
 const UsersPage = () => {
+  const { search } = useSearch();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
 
   const [open, setOpen] = useState(false);
   const [selectUser, setSelectUser] = useState(null);
   const [role, setRole] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
 
   const [apiLoading, setApiLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
-    const [page, setPage] = useState(1)
-  const limit =10
-  const paginatedUsers = users.slice(
-  (page - 1) * limit,
-  page * limit
-);
+  const [page, setPage] = useState(1);
+  const handleSortByName = () => {
+    const sorted = [...users].sort((a, b) =>
+      sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name),
+    );
 
-const totalPages = Math.ceil(users.length / limit);
+    setUsers(sorted);
+    setSortAsc(!sortAsc);
+  };
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase()) ||
+      user.role.toLowerCase().includes(search.toLowerCase()),
+  );
+  const limit = 10;
+  const paginatedUsers = filteredUsers.slice((page - 1) * limit, page * limit);
+
+  const totalPages = Math.ceil(filteredUsers.length / limit);
 
   // ---------------- FETCH USERS ----------------
   const fetchUsers = async () => {
@@ -59,30 +76,28 @@ const totalPages = Math.ceil(users.length / limit);
   };
 
   // ---------------- DELETE USER ----------------
-const handleDelete = async (id) => {
-  const confirmDelete = window.confirm("Are you sure?");
-  if (!confirmDelete) return;
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure?");
+    if (!confirmDelete) return;
 
-  const prevUsers = [...users];
+    const prevUsers = [...users];
 
-  setUsers((prev) => prev.filter((u) => u._id !== id));
+    setUsers((prev) => prev.filter((u) => u._id !== id));
 
-  try {
-    setDeleteLoading(id);
+    try {
+      setDeleteLoading(id);
 
-    await deleteUser(id);
+      await deleteUser(id);
 
-    toast.success("User deleted successfully");
-  } catch (err) {
-    setUsers(prevUsers);
+      toast.success("User deleted successfully");
+    } catch (err) {
+      setUsers(prevUsers);
 
-    toast.error(
-      err?.response?.data?.message || "Something went wrong"
-    );
-  } finally {
-    setDeleteLoading(null);
-  }
-};
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
 
   // ---------------- ROLE STYLE ----------------
   const getRoleStyle = (role) => {
@@ -102,7 +117,7 @@ const handleDelete = async (id) => {
   if (loading) {
     return (
       <div className="p-5 space-y-3">
-        <div  className="h-25 bg-gray-200 animate-pulse rounded" />
+        <div className="h-25 bg-gray-200 animate-pulse rounded" />
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="h-12 bg-gray-200 animate-pulse rounded" />
         ))}
@@ -112,11 +127,7 @@ const handleDelete = async (id) => {
 
   // ---------------- EMPTY STATE ----------------
   if (!users.length) {
-    return (
-      <div className="p-10 text-center text-gray-500">
-        No users found
-      </div>
-    );
+    return <div className="p-10 text-center text-gray-500">No users found</div>;
   }
 
   return (
@@ -124,9 +135,7 @@ const handleDelete = async (id) => {
       {/* HEADER */}
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Users</h1>
-        <p className="text-sm text-gray-500">
-          Manage all system users
-        </p>
+        <p className="text-sm text-gray-500">Manage all system users</p>
       </div>
 
       {/* TABLE */}
@@ -134,7 +143,9 @@ const handleDelete = async (id) => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b text-left text-sm text-gray-500">
-              <th className="py-3">Name</th>
+              <th className="py-3 cursor-pointer" onClick={handleSortByName}>
+                Name {sortAsc ? "↑" : "↓"}
+              </th>
               <th className="py-3">Email</th>
               <th className="py-3">Role</th>
               <th className="py-3">Actions</th>
@@ -148,14 +159,15 @@ const handleDelete = async (id) => {
                 <td className="py-4">{u.email}</td>
 
                 <td className="py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs ${getRoleStyle(u.role)}`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${getRoleStyle(u.role)}`}
+                  >
                     {u.role}
                   </span>
                 </td>
 
                 <td className="py-4">
                   <div className="flex gap-2">
-                    
                     <button
                       className="px-3 py-1 text-sm border rounded-md hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
@@ -174,7 +186,6 @@ const handleDelete = async (id) => {
                     >
                       {deleteLoading === u._id ? "Deleting..." : "Delete"}
                     </button>
-
                   </div>
                 </td>
               </tr>
@@ -182,7 +193,6 @@ const handleDelete = async (id) => {
           </tbody>
         </table>
         <div className="flex items-center justify-center gap-3 mt-6">
-          
           <button
             className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100 cursor-pointer"
             disabled={page === 1}
@@ -190,11 +200,11 @@ const handleDelete = async (id) => {
           >
             <FaPersonWalkingArrowLoopLeft className="text-red-400" />
           </button>
-        
+
           <span className="text-sm">
             {page} / {totalPages}
           </span>
-        
+
           <button
             className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100 cursor-pointer"
             disabled={page === totalPages}
@@ -202,7 +212,6 @@ const handleDelete = async (id) => {
           >
             <FaPersonWalkingArrowRight className="text-blue-400  " />
           </button>
-        
         </div>
       </div>
 
@@ -210,11 +219,8 @@ const handleDelete = async (id) => {
       {open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <div className="bg-white w-full max-w-md rounded-xl p-6">
-
             <div className="flex justify-between mb-4">
-              <h2 className="text-lg font-semibold">
-                Update Role
-              </h2>
+              <h2 className="text-lg font-semibold">Update Role</h2>
               <button onClick={() => setOpen(false)}>✕</button>
             </div>
 
@@ -241,7 +247,6 @@ const handleDelete = async (id) => {
             >
               {apiLoading ? "Saving..." : "Save Changes"}
             </button>
-
           </div>
         </div>
       )}

@@ -4,10 +4,12 @@ import { useAuth } from "@/auth/AuthContext";
 import { CiLight } from "react-icons/ci";
 import { MdNightlightRound } from "react-icons/md";
 import { GoPersonFill } from "react-icons/go";
+import { useSearch } from "./SearchContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [dark, setDark] = useState(false);
+  const { search, setSearch } = useSearch();
 
   return (
     <header className="h-14 bg-white border-b px-6 flex items-center justify-between">
@@ -19,6 +21,8 @@ const Navbar = () => {
       </h1>
 
       <input
+      value={search}
+      onChange={(e)=>{setSearch(e.target.value)}}
         placeholder="Search..."
         className="w-1/3 px-3 py-1 border rounded-md text-sm"
       />
